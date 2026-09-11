@@ -30,7 +30,7 @@ description: 在任意基于 C# 的后端项目中新增、重构或审查业务
 ```text
 YourProject/
 ├── Controllers/
-│   └── RolesController.cs
+│   └── RoleController.cs
 ├── Services/
 │   └── Roles/
 │       ├── IRoleService.cs
@@ -42,24 +42,26 @@ YourProject/
 
 遵循以下规则：
 
-- Controller 使用复数业务名：`RolesController`、`UsersController`。
+- Controller 使用单数业务名：`RoleController`、`UserController`。
 - 服务目录使用复数业务名：`Services/Roles/`；服务接口和实现使用单数：`IRoleService`、`RoleService`。
-- 模型目录与业务域对应：`Models/Roles/`。模型文件使用清晰的业务名称，例如 `RoleModels.cs`；当模型较多时可按用途拆成 `RoleRequests.cs`、`RoleResponses.cs`、`RoleQueries.cs`。
-- Controller、Service 接口、Service 实现都显式引用对应的 `YourProject.Models.XXs` 命名空间。
+- 模型目录与业务域对应：`Models/Roles/`。模型文件使用清晰的业务名称，例如 `RoleModel.cs`；当模型较多时可按用途拆成 `RoleRequest.cs`、`RoleResponse.cs`、`RoleQuerie.cs`。
+- Controller、Service 接口、Service 实现都显式引用对应的 `YourProject.Models.XX` 命名空间，XX用复数业务名。
 - 公开请求、查询、列表项和响应模型使用描述性名称，如 `SaveRoleRequest`、`RoleListQuery`、`RoleListItem`、`RoleListResult`。
 - C# XML 文档注释使用多行 `summary` 格式。
 
 ## 路由与 HTTP 方法
 
-控制器路由以资源名为根。列表、保存、状态切换和删除使用固定动作路由：
+控制器路由以资源名为根。资源名为单数业务名。
+
+列表、保存、状态切换和删除使用固定动作路由：
 
 | 场景 | HTTP 方法 | 路由 | 请求体 / 参数 |
 | --- | --- | --- | --- |
-| 查询列表 | `GET` | `/xxs/list` | 查询参数；分页字段使用项目统一命名 |
-| 新增或更新 | `POST` | `/xxs/save` | `SaveXXRequest`，通过主键 `Id` 区分 |
-| 启用 | `POST` | `/xxs/{id}/enable` | 无请求体，除非业务确有额外参数 |
-| 禁用 | `POST` | `/xxs/{id}/disable` | 无请求体，除非业务确有额外参数 |
-| 单个或批量删除 | `POST` | `/xxs/delete` | 请求体是 ID 数组 |
+| 查询列表 | `GET` | `/xx/list` | 查询参数；分页字段使用项目统一命名 |
+| 新增或更新 | `POST` | `/xx/save` | `SaveXXRequest`，通过主键 `Id` 区分 |
+| 启用 | `POST` | `/xx/{id}/enable` | 无请求体，除非业务确有额外参数 |
+| 禁用 | `POST` | `/xx/{id}/disable` | 无请求体，除非业务确有额外参数 |
+| 单个或批量删除 | `POST` | `/xx/delete` | 请求体是 ID 数组 |
 
 删除接口必须复用同一个 `/delete` 接口。单删时前端传单元素数组，批量删除传多个 ID；不要分别创建 `/{id}`、`/batch-delete` 等接口。除非有明确的业务要求，删除请求体直接使用 `IReadOnlyList<string>` 或 `List<string>`，保持 JSON 结构为数组。
 
@@ -106,10 +108,10 @@ public async Task<IActionResult> Delete([FromBody] IReadOnlyList<string> ids, Ca
 ## 实施步骤
 
 1. 确认业务域名称、实体、授权策略以及是否存在特殊业务要求。
-2. 在 `Models/XXs` 定义或补充请求、查询和响应模型，并添加数据校验特性。
-3. 在 `Services/XXs/IXXService.cs` 声明列表、保存、启用、禁用、删除等服务契约。
-4. 在 `Services/XXs/XXService.cs` 实现校验、查询、审计字段和事务内关联数据处理。
-5. 在 `Controllers/XXController.cs` 仅进行路由、模型绑定、当前用户传递和结果包装；不要放入业务逻辑。
+2. 在 `Models/XX` 定义或补充请求、查询和响应模型，并添加数据校验特性。
+3. 在 `Services/XXX/IXXService.cs` 声明列表、保存、启用、禁用、删除等服务契约。XXX为复数业务名，XX为单数业务名。
+4. 在 `Services/XXX/XXService.cs` 实现校验、查询、审计字段和事务内关联数据处理。XXX为复数业务名，XX为单数业务名。
+5. 在 `Controllers/XXController.cs` 仅进行路由、模型绑定、当前用户传递和结果包装；不要放入业务逻辑。XX为单数业务名。
 6. 同步更新前端 API 调用：列表使用 `/list`，保存使用 `/save`，删除传 ID 数组到 `/delete`。
 7. 搜索旧的 `PUT`、`PATCH`、`DELETE`、`create`、`update`、单独批量删除等路由，确认本次业务域没有保留冲突接口。
 8. 执行受影响项目构建；涉及控制台调用时同时执行类型检查，并核对 OpenAPI 或关键请求。
@@ -121,7 +123,7 @@ public async Task<IActionResult> Delete([FromBody] IReadOnlyList<string> ids, Ca
 - [ ] 新增和更新统一为 `/save`，并由 `Id` 区分。
 - [ ] 启用、禁用路由分别为 `/enable`、`/disable`。
 - [ ] 单删和批删复用 `POST /delete`，请求体为 ID 数组。
-- [ ] Controller、`IXXService`、`XXService`、`Models/XXs` 均已存在且职责清晰。
+- [ ] Controller、`IXXService`、`XXService`、`Models/XX` 均已存在且职责清晰。
 - [ ] 模型未定义在 Controller 或 Service 接口文件内。
 - [ ] 特殊业务规则已在服务端实现并覆盖通用规则。
 - [ ] 构建、静态检查和必要接口验证已完成。
