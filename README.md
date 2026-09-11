@@ -6,7 +6,7 @@
 
 ```text
 develop-skills/
-├── csharp-api/
+├── csharp-webapi/
 │   └── SKILL.md
 └── README.md
 ```
@@ -15,14 +15,14 @@ develop-skills/
 
 | 技能 | 适用场景 |
 | --- | --- |
-| [csharp-api](./csharp-api/SKILL.md) | 在 ASP.NET Core 等 C# 后端项目中新增、重构或审查业务管理 API；覆盖 Controller、Service 和 Models 分层，以及列表、保存、启用、禁用与删除接口约定。 |
+| [csharp-webapi](./csharp-webapi/SKILL.md) | 在 ASP.NET Core 等 C# Web API 项目中新增、重构或审查业务管理接口；覆盖 Controller、Service 和 Models 分层，以及列表、保存、启用、禁用与删除接口约定。 |
 
 ## 使用方式
 
 进入具体技能目录，阅读其 `SKILL.md`，并在执行任务时遵循其中的约定。例如：
 
 ```bash
-cat csharp-api/SKILL.md
+cat csharp-webapi/SKILL.md
 ```
 
 ## 贡献新技能

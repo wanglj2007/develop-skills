@@ -2,13 +2,13 @@
 
 ## 项目结构与模块组织
 
-本仓库收集可复用的开发技能。每项技能位于根目录下独立的短横线命名目录中，并以 `SKILL.md` 定义。例如，`csharp-api/SKILL.md` 记录 C# 业务管理 API 的约定。根目录 `README.md` 是技能目录：新增技能时，必须在其中加入简短说明和相对链接。
+本仓库收集可复用的开发技能。每项技能位于根目录下独立的短横线命名目录中，并以 `SKILL.md` 定义。例如，`csharp-webapi/SKILL.md` 记录 C# 业务管理 API 的约定。根目录 `README.md` 是技能目录：新增技能时，必须在其中加入简短说明和相对链接。
 
 仓库目前没有应用源码、测试或资源目录。除非技能本身需要配套材料，否则不要引入这些目录。
 
 ## 编写技能
 
-每个 `SKILL.md` 以 YAML front matter 开头，至少包含 `name` 与 `description`。`name` 必须与目录名对应，例如 `csharp-api`。使用直接、可执行的语言编写指引；内容较多时，可按设计规则、实施步骤、示例和审查清单分节。
+每个 `SKILL.md` 以 YAML front matter 开头，至少包含 `name` 与 `description`。`name` 必须与目录名对应，例如 `csharp-webapi`。使用直接、可执行的语言编写指引；内容较多时，可按设计规则、实施步骤、示例和审查清单分节。
 
 优先提供跨项目可复用的规则。框架或业务域专属的约定应明确标注适用范围。
 
@@ -21,7 +21,7 @@ git diff --check      # 检查空白字符问题
 git diff -- README.md # 审阅技能目录改动
 ```
 
-提交前检查 Markdown 渲染效果，并验证诸如 `[csharp-api](./csharp-api/SKILL.md)` 的链接能从 `README.md` 正确访问。
+提交前检查 Markdown 渲染效果，并验证诸如 `[csharp-webapi](./csharp-webapi/SKILL.md)` 的链接能从 `README.md` 正确访问。
 
 ## 风格与命名
 

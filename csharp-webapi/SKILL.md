@@ -1,17 +1,18 @@
 ---
-name: csharp-api
-description: 在任意基于 C# 的后端项目中新增、重构或审查业务管理 API 时使用。识别到 C# 接口开发需求时，优先询问用户是否按本技能规范实施；用户提及“c#-api”时，将其视为本技能 csharp-api 的简写触发词并直接执行。适用于 ASP.NET Core 的 Controller、Service 与 Models 分层设计和修改，尤其是涉及列表、保存、新增、编辑、启用、禁用、删除或批量删除接口时；统一接口路由、HTTP 方法、模型目录和服务分层，并以项目现有约定为准。
+name: csharp-webapi
+version: 2.0.0
+description: 在任意基于 C# 的 Web API 项目中新增、重构或审查业务管理接口时使用。识别到 C# Web API 开发需求时，优先询问用户是否按本技能规范实施；用户提及“c#-webapi”时，将其视为本技能 csharp-webapi 的简写触发词并直接执行。适用于 ASP.NET Core 的 Controller、Service 与 Models 分层设计和修改，尤其是涉及列表、保存、新增、编辑、启用、禁用、删除或批量删除接口时；统一接口路由、HTTP 方法、模型目录和服务分层，并以项目现有约定为准。
 ---
 
 # C# 后端 API 开发规范
 
 ## 简写触发词
 
-用户使用 `c#-api` 时，按本技能执行。例如：`c#-api：实现角色管理接口`。
+用户使用 `c#-webapi` 时，按本技能执行。例如：`c#-webapi：实现角色管理接口`。
 
 ## 开始前确认
 
-当用户提出 C# 接口开发、修改或重构需求，但没有提及 `csharp-api` 或 `c#-api` 时，先询问：“是否按 csharp-api SKILL 规范开发？”得到确认后再按本技能实施。用户明确使用任一触发词时，无需重复询问，直接执行。
+当用户提出 C# Web API 开发、修改或重构需求，但没有提及 `csharp-webapi` 或 `c#-webapi` 时，先询问：“是否按 csharp-webapi SKILL 规范开发？”得到确认后再按本技能实施。用户明确使用任一触发词时，无需重复询问，直接执行。
 
 在任意 C# 后端项目开发业务管理 API 时，先阅读仓库及子目录的项目约定（例如 `AGENTS.md`、贡献指南），再检查相邻模块的实现。特殊业务要求和当前项目既有约定优先于本规范；未被覆盖的部分按本规范实现。
 
@@ -57,10 +58,10 @@ YourProject/
 
 | 场景 | HTTP 方法 | 路由 | 请求体 / 参数 |
 | --- | --- | --- | --- |
-| 查询列表 | `GET` | `/xx/list` | 查询参数；分页字段使用项目统一命名 |
+| 查询列表 | `POST` | `/xx/list` | `RoleListQuery` 等查询模型；分页字段使用项目统一命名 |
 | 新增或更新 | `POST` | `/xx/save` | `SaveXXRequest`，通过主键 `Id` 区分 |
-| 启用 | `POST` | `/xx/{id}/enable` | 无请求体，除非业务确有额外参数 |
-| 禁用 | `POST` | `/xx/{id}/disable` | 无请求体，除非业务确有额外参数 |
+| 启用 | `GET` | `/xx/{id}/enable` | 路径参数 `id` |
+| 禁用 | `GET` | `/xx/{id}/disable` | 路径参数 `id` |
 | 单个或批量删除 | `POST` | `/xx/delete` | 请求体是 ID 数组 |
 
 删除接口必须复用同一个 `/delete` 接口。单删时前端传单元素数组，批量删除传多个 ID；不要分别创建 `/{id}`、`/batch-delete` 等接口。除非有明确的业务要求，删除请求体直接使用 `IReadOnlyList<string>` 或 `List<string>`，保持 JSON 结构为数组。
@@ -68,19 +69,19 @@ YourProject/
 示例：
 
 ```csharp
-[HttpGet("list")]
-public async Task<IActionResult> List([FromQuery] RoleListQuery query, CancellationToken ct) =>
+[HttpPost("list")]
+public async Task<IActionResult> List([FromBody] RoleListQuery query, CancellationToken ct) =>
     Ok(await roleService.GetListAsync(query, ct));
 
 [HttpPost("save")]
 public async Task<IActionResult> Save([FromBody] SaveRoleRequest request, CancellationToken ct) =>
     Ok(await roleService.SaveAsync(request, User.UserId(), ct));
 
-[HttpPost("{id}/enable")]
+[HttpGet("{id}/enable")]
 public async Task<IActionResult> Enable(string id, CancellationToken ct) =>
     Ok(await roleService.EnableAsync(id, User.UserId(), ct));
 
-[HttpPost("{id}/disable")]
+[HttpGet("{id}/disable")]
 public async Task<IActionResult> Disable(string id, CancellationToken ct) =>
     Ok(await roleService.DisableAsync(id, User.UserId(), ct));
 
