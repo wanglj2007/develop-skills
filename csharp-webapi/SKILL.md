@@ -1,6 +1,6 @@
 ---
 name: csharp-webapi
-version: 2.0.0
+version: 2.1.0
 description: 在任意基于 C# 的 Web API 项目中新增、重构或审查业务管理接口时使用。识别到 C# Web API 开发需求时，优先询问用户是否按本技能规范实施；用户提及“c#-webapi”时，将其视为本技能 csharp-webapi 的简写触发词并直接执行。适用于 ASP.NET Core 的 Controller、Service 与 Models 分层设计和修改，尤其是涉及列表、保存、新增、编辑、启用、禁用、删除或批量删除接口时；统一接口路由、HTTP 方法、模型目录和服务分层，并以项目现有约定为准。
 ---
 
@@ -19,6 +19,8 @@ description: 在任意基于 C# 的 Web API 项目中新增、重构或审查业
 ## 设计原则
 
 - API 只使用 `GET` 和 `POST`。不要新增 `PUT`、`PATCH` 或 `DELETE` 接口。
+- 列表接口只返回列表展示所需的数据；编辑表单所需的完整数据不得混入列表项。
+- 从列表进入编辑界面时，前端必须按记录 ID 调用后端业务 Controller 的编辑数据接口，不得直接复用列表行中的数据作为编辑数据源。
 - 一个业务域使用完整分层，避免 Controller 直接访问 DbContext 或承载业务逻辑。
 - 请求、查询和响应模型不定义在 Controller 或 Service 接口文件中，统一放入 `Models` 的对应业务目录。
 - 接口返回、鉴权、错误码和分页格式遵循项目已有的响应包装、控制器基类及相邻模块约定。
@@ -58,7 +60,8 @@ YourProject/
 
 | 场景 | HTTP 方法 | 路由 | 请求体 / 参数 |
 | --- | --- | --- | --- |
-| 查询列表 | `POST` | `/xx/list` | `RoleListQuery` 等查询模型；分页字段使用项目统一命名 |
+| 查询列表 | `POST` | `/xx/list` | `RoleListQuery` 等查询模型；仅返回列表展示所需字段，分页字段使用项目统一命名 |
+| 获取编辑数据 | `GET` | `/xx/{id}` | 路径参数 `id`；返回编辑表单所需的完整数据 |
 | 新增或更新 | `POST` | `/xx/save` | `SaveXXRequest`，通过主键 `Id` 区分 |
 | 启用 | `GET` | `/xx/{id}/enable` | 路径参数 `id` |
 | 禁用 | `GET` | `/xx/{id}/disable` | 路径参数 `id` |
@@ -72,6 +75,10 @@ YourProject/
 [HttpPost("list")]
 public async Task<IActionResult> List([FromBody] RoleListQuery query, CancellationToken ct) =>
     Ok(await roleService.GetListAsync(query, ct));
+
+[HttpGet("{id}")]
+public async Task<IActionResult> Get(string id, CancellationToken ct) =>
+    Ok(await roleService.GetEditAsync(id, ct));
 
 [HttpPost("save")]
 public async Task<IActionResult> Save([FromBody] SaveRoleRequest request, CancellationToken ct) =>
@@ -89,6 +96,8 @@ public async Task<IActionResult> Disable(string id, CancellationToken ct) =>
 public async Task<IActionResult> Delete([FromBody] IReadOnlyList<string> ids, CancellationToken ct) =>
     Ok(await roleService.DeleteAsync(ids, User.UserId(), ct));
 ```
+
+编辑数据接口默认使用 `GET /xx/{id}`。若获取编辑数据确实需要额外参数，且参数总数超过两个，则改用 `POST`，将参数封装为请求模型；不要通过大量查询字符串参数传递编辑上下文。无论使用哪种方法，接口都必须由对应业务 Controller 提供，并按 ID 查询记录后返回编辑所需数据。
 
 ## 保存规则
 
@@ -110,17 +119,20 @@ public async Task<IActionResult> Delete([FromBody] IReadOnlyList<string> ids, Ca
 
 1. 确认业务域名称、实体、授权策略以及是否存在特殊业务要求。
 2. 在 `Models/XX` 定义或补充请求、查询和响应模型，并添加数据校验特性。
-3. 在 `Services/XXX/IXXService.cs` 声明列表、保存、启用、禁用、删除等服务契约。XXX为复数业务名，XX为单数业务名。
-4. 在 `Services/XXX/XXService.cs` 实现校验、查询、审计字段和事务内关联数据处理。XXX为复数业务名，XX为单数业务名。
-5. 在 `Controllers/XXController.cs` 仅进行路由、模型绑定、当前用户传递和结果包装；不要放入业务逻辑。XX为单数业务名。
-6. 同步更新前端 API 调用：列表使用 `/list`，保存使用 `/save`，删除传 ID 数组到 `/delete`。
-7. 搜索旧的 `PUT`、`PATCH`、`DELETE`、`create`、`update`、单独批量删除等路由，确认本次业务域没有保留冲突接口。
-8. 执行受影响项目构建；涉及控制台调用时同时执行类型检查，并核对 OpenAPI 或关键请求。
+3. 为列表项与编辑数据分别定义响应模型；列表项只保留展示字段，编辑响应模型包含编辑表单所需字段。
+4. 在 `Services/XXX/IXXService.cs` 声明列表、按 ID 获取编辑数据、保存、启用、禁用、删除等服务契约。XXX为复数业务名，XX为单数业务名。
+5. 在 `Services/XXX/XXService.cs` 实现校验、查询、审计字段和事务内关联数据处理。XXX为复数业务名，XX为单数业务名。
+6. 在 `Controllers/XXController.cs` 仅进行路由、模型绑定、当前用户传递和结果包装；不要放入业务逻辑。XX为单数业务名。
+7. 同步更新前端 API 调用：列表使用 `/list`；进入编辑页调用 `GET /xx/{id}`（参数超过两个时按规则改用 `POST`）；保存使用 `/save`；删除传 ID 数组到 `/delete`。
+8. 搜索旧的 `PUT`、`PATCH`、`DELETE`、`create`、`update`、单独批量删除等路由，确认本次业务域没有保留冲突接口。
+9. 执行受影响项目构建；涉及控制台调用时同时执行类型检查，并核对 OpenAPI 或关键请求。
 
 ## 审查清单
 
 - [ ] 仅使用 `GET` 和 `POST`。
 - [ ] 列表路由是 `/list`。
+- [ ] 列表响应仅包含列表展示字段，编辑数据通过按 ID 的独立接口获取。
+- [ ] 业务 Controller 提供 `GET /xx/{id}` 获取编辑数据；参数总数超过两个时使用 `POST` 请求模型。
 - [ ] 新增和更新统一为 `/save`，并由 `Id` 区分。
 - [ ] 启用、禁用路由分别为 `/enable`、`/disable`。
 - [ ] 单删和批删复用 `POST /delete`，请求体为 ID 数组。
