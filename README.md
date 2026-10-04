@@ -8,6 +8,8 @@
 develop-skills/
 ├── csharp-webapi/
 │   └── SKILL.md
+├── salar-web/
+│   └── SKILL.md
 └── README.md
 ```
 
@@ -16,6 +18,7 @@ develop-skills/
 | 技能 | 适用场景 |
 | --- | --- |
 | [csharp-webapi](./csharp-webapi/SKILL.md) | 在 ASP.NET Core 等 C# Web API 项目中新增、重构或审查业务管理接口；覆盖 Controller、Service 和 Models 分层，以及列表、保存、启用、禁用与删除接口约定。 |
+| [salar-web](./salar-web/SKILL.md) | 在 Salar-web 中开发前端业务管理功能；覆盖分页列表、树形表格、编辑抽屉、关联选择、布局配色、类型与国际化，并包含统一的后端接口契约。 |
 
 ## 使用方式
 
