@@ -1,6 +1,6 @@
 ---
 name: salar-web
-version: 1.0.3
+version: 1.0.4
 description: 在 Salar-web 中新增、修改或审查前端业务管理功能时使用。实施 Vue 3、TypeScript、Element Plus 的分页列表、树形表格、编辑抽屉、关联选择、统一布局配色、API 类型与国际化，并按统一的 C# Web API 契约对接后端接口。
 ---
 
@@ -66,6 +66,7 @@ description: 在 Salar-web 中新增、修改或审查前端业务管理功能�
 ## 列表页
 
 - 复用 `SearchPanel`、`TableHeaderOperation`、`useUIPaginatedTable`、`defaultTransform` 与 `useTableOperate`，先核对当前 hook 签名再接入。
+- 列表页面不显示刷新按钮；使用 `TableHeaderOperation` 时显式设置 `:show-refresh="false"`，自定义工具栏也不添加刷新入口。搜索、重置及保存、删除、状态变更成功后的数据重新加载仍按对应流程执行。
 - 查询参数采用项目的 `current`、`size`；默认 `current: 1, size: 50`，可按业务需求调整。未填写的筛选项保持 `undefined` 等契约约定的空值，布尔值 `false` 不得被当作未填写。
 - 分页列表统一使用后端分页：将 `current`、`size` 和筛选条件传给列表接口，表格展示后端返回的当前页数据，分页器总数使用后端返回的总记录数。切换页码或每页条数时重新请求后端；禁止先获取全量数据再由前端切片分页，公共分页 hook 也必须按后端分页方式接入。
 - 搜索、回车搜索和重置回到第一页；分页变化同步查询参数。重置同时恢复筛选条件与页码。
@@ -211,7 +212,6 @@ description: 在 Salar-web 中新增、修改或审查前端业务管理功能�
 | 重置 | 默认类型、`size="small"` | 文本按钮，与搜索同组靠右 |
 | 列表新增 | `type="primary" plain size="small"` | 加号图标与文本 |
 | 列表批量删除 | `type="danger" plain size="small"` | 删除图标与文本，空选择禁用，使用 `ElPopconfirm` 确认 |
-| 刷新 | 默认类型、`size="small"` | 刷新图标与文本，加载时图标 `animate-spin` |
 | 默认编辑抽屉保存 | `type="primary" size="small"` | 使用 `ElPopconfirm`，绑定保存 loading |
 | 现有自定义大表单头部保存（业务特例） | `type="primary"`，默认尺寸 | 使用 `ElPopconfirm`，绑定保存 loading |
 | 行操作入口 | 默认类型、`circle size="small"` | 编辑图标，悬停打开 `ElDropdown trigger="hover"`，下拉尺寸为 small；菜单项触发操作 |
@@ -223,13 +223,13 @@ description: 在 Salar-web 中新增、修改或审查前端业务管理功能�
 | 默认编辑抽屉关闭 | `ElDrawer` 内置关闭按钮 | 保留默认 `show-close`，位于头部右上角 |
 | 自定义头部关闭（业务特例） | `text circle` | 使用关闭图标和国际化 `aria-label` |
 
-- 列表卡片头部复用 `TableHeaderOperation`：绑定 `v-model:columns`、`disabled-delete` 与 `loading`，按需设置 `show-refresh`；处理 `add`、`delete`、`refresh` 事件。刷新默认显示，不需要时显式关闭。
+- 列表卡片头部复用 `TableHeaderOperation`：绑定 `v-model:columns`、`disabled-delete` 与 `loading`，显式设置 `:show-refresh="false"`；处理 `add`、`delete` 事件。组件自身可能默认显示刷新按钮，页面必须关闭。
 - 公共工具栏用可换行的 `ElSpace` 靠右排列；自定义操作通过 `prefix`、`suffix` 插槽补充。替换默认插槽时，新增和批量删除的显示及确认行为由调用方负责。
 - 公共工具栏已确认批量删除，页面事件处理函数不再重复确认。单行删除和状态切换使用 `ElMessageBox` 类确认流程；取消只退出操作，不能吞掉真正的请求异常。
 - 下拉菜单项左侧带相应图标，图标与文本间距约 `4px`；删除项用 `text-error`，需要分组时添加分隔线。不要把所有行操作堆成多个实心按钮。
 - 操作列默认遵循项目明确的悬停下拉约定，显式设置 `trigger="hover"`，不要擅自统一改为点击触发。任务明确要求触屏适配时，再按该页面需求补充交互；键盘操作与焦点样式按组件实际能力验证。
-- 按钮图标使用组件 icon 插槽或 `ElIcon`，沿用项目图标尺寸；不为加号、删除、刷新单独硬编码配色。只有图标的按钮提供国际化标题或 `aria-label`。
-- 保存的 loading 与重复提交拦截由保存请求状态控制；表格 loading 不应被误用为保存状态。公共刷新当前只旋转图标，不自动禁止重复点击，需要时在处理函数中限制。
+- 按钮图标使用组件 icon 插槽或 `ElIcon`，沿用项目图标尺寸；不为加号、删除单独硬编码配色。只有图标的按钮提供国际化标题或 `aria-label`。
+- 保存的 loading 与重复提交拦截由保存请求状态控制；表格 loading 不应被误用为保存状态。
 
 ### 配色与交互状态
 
