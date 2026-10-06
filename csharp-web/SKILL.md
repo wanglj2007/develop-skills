@@ -1,6 +1,6 @@
 ---
-name: salar-web
-version: 1.0.10
+name: csharp-web
+version: 1.0.11
 description: 在 Salar-web 中新增、修改或审查前端业务管理功能时使用。实施 Vue 3、TypeScript、Element Plus 的分页列表、树形表格、编辑抽屉、关联选择、统一布局配色、API 类型与国际化，后端接口规范引用 csharp-webapi 技能。
 ---
 
